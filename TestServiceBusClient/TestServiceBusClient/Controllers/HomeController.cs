@@ -13,6 +13,7 @@ namespace TestServiceBusClient.Controllers
 {
     public class HomeController : Controller
     {
+        public static bool StartedProcessing { get; set; } = false;
         public ActionResult Index()
         {
             return View();
@@ -27,7 +28,20 @@ namespace TestServiceBusClient.Controllers
 
         public async Task<ActionResult> Contact()
         {
-            await MvcApplication.Processor.StartProcessingAsync(CancellationToken.None);
+            if (!StartedProcessing)
+            {
+                try
+                {
+                    await MvcApplication.Processor.StartProcessingAsync(CancellationToken.None);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                
+                StartedProcessing = false;
+            }
+            
 
             await Task.Run(() =>
             {
